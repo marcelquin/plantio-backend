@@ -1,0 +1,56 @@
+
+version: "3"
+services:
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - /app/redis_data:/data
+
+  
+  database:
+    image: postgres:17
+    environment:
+      - POSTGRES_DB=mhqa_plantio
+      - POSTGRES_PASSWORD=hk28gr20p1
+      - POSTGRES_USER=mhqa
+    ports:
+      - 5432:5432
+    networks:
+      - link
+    volumes:
+      - /app/database/mhqa_plantio 
+    restart: on-failure
+
+  backend:
+    build: /Backend
+    ports:
+      - 8080:8080
+    networks:
+      - link  
+        environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/mhqa_plantio
+      #- SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.0.24:5432/mhqa_plantio
+      - SPRING_DATASOURCE_USERNAME=mhqa
+      - SPRING_DATASOURCE_PASSWORD=hk28gr20p1
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+      - spring.jpa.show-sql=true
+      - spring.application.name=gerhottalica
+      - spring.cache.type=redis
+      - spring.redis.host=redis
+      - spring.redis.port=6379
+    depends_on:
+      - database
+      - redis
+    depends_on:
+      - database
+    restart: on-failure
+
+
+networks:
+   link:
+     driver: bridge
