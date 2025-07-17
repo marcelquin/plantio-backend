@@ -26,5 +26,5 @@ jobs:
           context: ./Backend
           push: true
           tags: |
-              ${{ secrets.DOCKERHUB_USER }}/plantio20-backend:v3
+              ${{ secrets.DOCKERHUB_USER }}/plantio20-backend:v4
               ${{ secrets.DOCKERHUB_USER }}/plantio20-backend:latest
