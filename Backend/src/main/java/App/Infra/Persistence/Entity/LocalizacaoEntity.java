@@ -14,13 +14,15 @@ public class LocalizacaoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int numeroLinha;
-
-    private String nomeArea;
-
     private String referencia;
 
     private Boolean disponivel;
+
+    private int numeroLocalizacao;
+
+    @OneToOne
+    @JoinColumn(name = "plantaEntity_id", referencedColumnName = "id")
+    private PlantaEntity planta;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime timeStamp;
@@ -28,13 +30,29 @@ public class LocalizacaoEntity {
     public LocalizacaoEntity() {
     }
 
-    public LocalizacaoEntity(Long id, int numeroLinha, String nomeArea, String referencia, Boolean disponivel, LocalDateTime timeStamp) {
+    public LocalizacaoEntity(Long id, String referencia, Boolean disponivel, int numeroLocalizacao, PlantaEntity planta, LocalDateTime timeStamp) {
         this.id = id;
-        this.numeroLinha = numeroLinha;
-        this.nomeArea = nomeArea;
         this.referencia = referencia;
         this.disponivel = disponivel;
+        this.numeroLocalizacao = numeroLocalizacao;
+        this.planta = planta;
         this.timeStamp = timeStamp;
+    }
+
+    public int getNumeroLocalizacao() {
+        return numeroLocalizacao;
+    }
+
+    public void setNumeroLocalizacao(int numeroLocalizacao) {
+        this.numeroLocalizacao = numeroLocalizacao;
+    }
+
+    public PlantaEntity getPlanta() {
+        return planta;
+    }
+
+    public void setPlanta(PlantaEntity planta) {
+        this.planta = planta;
     }
 
     public Long getId() {
@@ -45,21 +63,6 @@ public class LocalizacaoEntity {
         this.id = id;
     }
 
-    public int getNumeroLinha() {
-        return numeroLinha;
-    }
-
-    public void setNumeroLinha(int numeroLinha) {
-        this.numeroLinha = numeroLinha;
-    }
-
-    public String getNomeArea() {
-        return nomeArea;
-    }
-
-    public void setNomeArea(String nomeArea) {
-        this.nomeArea = nomeArea;
-    }
 
     public String getReferencia() {
         return referencia;
@@ -85,18 +88,31 @@ public class LocalizacaoEntity {
         this.timeStamp = timeStamp;
     }
 
-    public void SetInfoInicial(String area,int numeroPlantio, int numeroLinha,int referencia)
+    public void SetInfoInicial(String identificadorLinha, int numeroLocalizacao)
     {
         this.disponivel = Boolean.TRUE;
-        this.nomeArea = area;
-        this.numeroLinha = numeroLinha;
-        this.referencia = area+"_"+numeroPlantio+":"+numeroLinha+"-"+referencia;
+        this.numeroLocalizacao = numeroLocalizacao;
+        this.referencia = identificadorLinha+"-LC"+numeroLocalizacao;
         this.timeStamp = LocalDateTime.now();
     }
 
-    public void SetPlanta()
+    public void AlterarReferencia(String linhaIdentificacao)
+    {
+        this.referencia = linhaIdentificacao+"-LC"+this.numeroLocalizacao;
+        this.timeStamp = LocalDateTime.now();
+    }
+
+    public void Disponibilizar()
+    {
+        this.disponivel = Boolean.TRUE;
+        this.planta = null;
+        this.timeStamp = LocalDateTime.now();
+    }
+
+    public void Indisponibilizar(PlantaEntity planta)
     {
         this.disponivel = Boolean.FALSE;
+        this.planta = planta;
         this.timeStamp = LocalDateTime.now();
     }
 }

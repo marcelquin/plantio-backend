@@ -15,11 +15,11 @@ public class LinhaEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private String identificador;
+
     private int numero;
 
-    private Boolean disponivel;
-
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<LocalizacaoEntity> localizacoes;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -28,12 +28,20 @@ public class LinhaEntity {
     public LinhaEntity() {
     }
 
-    public LinhaEntity(Long id, int numero, Boolean disponivel, List<LocalizacaoEntity> localizacoes, LocalDateTime timeStamp) {
+    public LinhaEntity(Long id, String identificador, int numero, List<LocalizacaoEntity> localizacoes, LocalDateTime timeStamp) {
         this.id = id;
+        this.identificador = identificador;
         this.numero = numero;
-        this.disponivel = disponivel;
         this.localizacoes = localizacoes;
         this.timeStamp = timeStamp;
+    }
+
+    public String getIdentificador() {
+        return identificador;
+    }
+
+    public void setIdentificador(String identificador) {
+        this.identificador = identificador;
     }
 
     public List<LocalizacaoEntity> getLocalizacoes() {
@@ -60,14 +68,6 @@ public class LinhaEntity {
         this.numero = numero;
     }
 
-    public Boolean getDisponivel() {
-        return disponivel;
-    }
-
-    public void setDisponivel(Boolean disponivel) {
-        this.disponivel = disponivel;
-    }
-
     public LocalDateTime getTimeStamp() {
         return timeStamp;
     }
@@ -76,14 +76,25 @@ public class LinhaEntity {
         this.timeStamp = timeStamp;
     }
 
-    public void SetInfoInicial(int numero)
+    public void SetInfoInicial(String identificadorPlantio,int numero)
     {
-        this.localizacoes = new ArrayList<>();
-        this.disponivel = Boolean.TRUE;
+        List<LocalizacaoEntity> list = new ArrayList<>();
+        this.localizacoes = list;
         this.timeStamp = LocalDateTime.now();
         this.numero = numero;
+        this.identificador = identificadorPlantio+":L"+numero;
     }
 
+    public void AlterarIdentificador(String identificadorPlantio)
+    {
+        this.identificador = identificadorPlantio+":L"+this.numero;
+        this.timeStamp = LocalDateTime.now();
+    }
 
+    public void ResetEntity()
+    {
+        List<LocalizacaoEntity> localizacaoEntities = new ArrayList<>();
+        this.localizacoes = localizacaoEntities;
+    }
 
 }

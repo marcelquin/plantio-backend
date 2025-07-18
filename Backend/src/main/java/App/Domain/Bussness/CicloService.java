@@ -4,10 +4,35 @@ import App.Domain.Response.*;
 import App.Infra.Exceptions.EntityNotFoundException;
 import App.Infra.Exceptions.IllegalActionException;
 import App.Infra.Exceptions.NullargumentsException;
+import App.Infra.Gateway.CicloGateway;
 import App.Infra.Mapper.*;
 import App.Infra.Persistence.Entity.*;
 import App.Infra.Persistence.Enum.CICLO;
 import App.Infra.Persistence.Repository.CicloRepository;
+import App.Infra.UseCase.Crecimento.UseCaseCrecimentoCicloDelete;
+import App.Infra.UseCase.Crecimento.UseCaseCrecimentoCicloPost;
+import App.Infra.UseCase.Crecimento.UseCaseCrecimentoCicloPut;
+import App.Infra.UseCase.FimCiclo.UseCaseFimCicloDelete;
+import App.Infra.UseCase.FimCiclo.UseCaseFimCicloPost;
+import App.Infra.UseCase.FimCiclo.UseCaseFimCicloPut;
+import App.Infra.UseCase.FloracaoCiclo.UseCaseFloracaoCicloDelete;
+import App.Infra.UseCase.FloracaoCiclo.UseCaseFloracaoCicloPost;
+import App.Infra.UseCase.FloracaoCiclo.UseCaseFloracaoCicloPut;
+import App.Infra.UseCase.FrutificacaoCiclo.UseCaseFrutificacaoCicloDelete;
+import App.Infra.UseCase.FrutificacaoCiclo.UseCaseFrutificacaoCicloPost;
+import App.Infra.UseCase.FrutificacaoCiclo.UseCaseFrutificacaoCicloPut;
+import App.Infra.UseCase.GerminacaoCiclo.UseCaseGerminacaoCicloDelete;
+import App.Infra.UseCase.GerminacaoCiclo.UseCaseGerminacaoCicloPost;
+import App.Infra.UseCase.GerminacaoCiclo.UseCaseGerminacaoCicloPut;
+import App.Infra.UseCase.MaturacaoCiclo.UseCaseMaturacaoCicloDelete;
+import App.Infra.UseCase.MaturacaoCiclo.UseCaseMaturacaoCicloPost;
+import App.Infra.UseCase.MaturacaoCiclo.UseCaseMaturacaoCicloPut;
+import App.Infra.UseCase.MudaCiclo.UseCaseMudaCicloDelete;
+import App.Infra.UseCase.MudaCiclo.UseCaseMudaCicloPost;
+import App.Infra.UseCase.MudaCiclo.UseCaseMudaCicloPut;
+import App.Infra.UseCase.Planta.UseCasePlantaGet;
+import App.Infra.UseCase.Plantio.UseCasePlantioGet;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -18,17 +43,32 @@ import java.time.LocalDateTime;
 import static App.Infra.Persistence.Enum.CICLO.*;
 
 @Service
-public class CicloService {
+public class CicloService implements CicloGateway {
 
     private final CicloRepository cicloRepository;
     private final CicloMapper cicloMapper;
-    private final GerminacaoService germinacaoService;
-    private final MudaService mudaService;
-    private final CrecimentoService crecimentoService;
-    private final FloracaoService floracaoService;
-    private final FrutificacaoService frutificacaoService;
-    private final MaturacaoService maturacaoService;
-    private final FimCicloService fimCicloService;
+    private final UseCasePlantaGet casePlantaGet;
+    private final UseCaseGerminacaoCicloPost caseGerminacaoCicloPost;
+    private final UseCaseMudaCicloPost caseMudaCicloPost;
+    private final UseCaseCrecimentoCicloPost caseCrecimentoCicloPost;
+    private final UseCaseFloracaoCicloPost caseFloracaoCicloPost;
+    private final UseCaseFrutificacaoCicloPost caseFrutificacaoCicloPost;
+    private final UseCaseMaturacaoCicloPost caseMaturacaoCicloPost;
+    private final UseCaseFimCicloPost caseFimCicloPost;
+    private final UseCaseGerminacaoCicloPut caseGerminacaoCicloPut;
+    private final UseCaseMudaCicloPut caseMudaCicloPut;
+    private final UseCaseCrecimentoCicloPut caseCrecimentoCicloPut;
+    private final UseCaseFloracaoCicloPut caseFloracaoCicloPut;
+    private final UseCaseFrutificacaoCicloPut caseFrutificacaoCicloPut;
+    private final UseCaseMaturacaoCicloPut caseMaturacaoCicloPut;
+    private final UseCaseFimCicloPut caseFimCicloPut;
+    private final UseCaseGerminacaoCicloDelete caseGerminacaoCicloDelete;
+    private final UseCaseMudaCicloDelete caseMudaCicloDelete;
+    private final UseCaseCrecimentoCicloDelete caseCrecimentoCicloDelete;
+    private final UseCaseFloracaoCicloDelete caseFloracaoCicloDelete;
+    private final UseCaseFrutificacaoCicloDelete caseFrutificacaoCicloDelete;
+    private final UseCaseMaturacaoCicloDelete caseMaturacaoCicloDelete;
+    private final UseCaseFimCicloDelete caseFimCicloDelete;
     private final GerminacaoMapper germinacaoMapper;
     private final MudaMapper mudaMapper;
     private final CrecimentoMapper crecimentoMapper;
@@ -37,16 +77,61 @@ public class CicloService {
     private final MaturacaoMapper maturacaoMapper;
     private final FimCicloMapper fimCicloMapper;
 
-    public CicloService(CicloRepository cicloRepository, CicloMapper cicloMapper, GerminacaoService germinacaoService, MudaService mudaService, CrecimentoService crecimentoService, FloracaoService floracaoService, FrutificacaoService frutificacaoService, MaturacaoService maturacaoService, FimCicloService fimCicloService, GerminacaoMapper germinacaoMapper, MudaMapper mudaMapper, CrecimentoMapper crecimentoMapper, FloracaoMapper floracaoMapper, FrutificacaoMapper frutificacaoMapper, MaturacaoMapper maturacaoMapper, FimCicloMapper fimCicloMapper) {
+    public CicloService(CicloRepository cicloRepository,
+                        CicloMapper cicloMapper,
+                        @Lazy UseCasePlantaGet casePlantaGet,
+                        @Lazy UseCaseGerminacaoCicloPost caseGerminacaoCicloPost,
+                        @Lazy UseCaseMudaCicloPost caseMudaCicloPost,
+                        @Lazy UseCaseCrecimentoCicloPost caseCrecimentoCicloPost,
+                        @Lazy UseCaseFloracaoCicloPost caseFloracaoCicloPost,
+                        @Lazy UseCaseFrutificacaoCicloPost caseFrutificacaoCicloPost,
+                        @Lazy UseCaseMaturacaoCicloPost caseMaturacaoCicloPost,
+                        @Lazy UseCaseFimCicloPost caseFimCicloPost,
+                        @Lazy UseCaseMudaCicloPut caseMudaCicloPut,
+                        @Lazy UseCaseCrecimentoCicloPut caseCrecimentoCicloPut,
+                        @Lazy UseCaseGerminacaoCicloPut caseGerminacaoCicloPut,
+                        @Lazy UseCaseFloracaoCicloPut caseFloracaoCicloPut,
+                        @Lazy UseCaseFrutificacaoCicloPut caseFrutificacaoCicloPut,
+                        @Lazy UseCaseMaturacaoCicloPut caseMaturacaoCicloPut,
+                        @Lazy UseCaseFimCicloPut caseFimCicloPut,
+                        @Lazy UseCaseGerminacaoCicloDelete caseGerminacaoCicloDelete,
+                        @Lazy UseCaseMudaCicloDelete caseMudaCicloDelete,
+                        @Lazy UseCaseCrecimentoCicloDelete caseCrecimentoCicloDelete,
+                        @Lazy UseCaseFloracaoCicloDelete caseFloracaoCicloDelete,
+                        @Lazy UseCaseFrutificacaoCicloDelete caseFrutificacaoCicloDelete,
+                        @Lazy UseCaseMaturacaoCicloDelete caseMaturacaoCicloDelete,
+                        @Lazy UseCaseFimCicloDelete caseFimCicloDelete,
+                        GerminacaoMapper germinacaoMapper,
+                        MudaMapper mudaMapper,
+                        CrecimentoMapper crecimentoMapper,
+                        FloracaoMapper floracaoMapper,
+                        FrutificacaoMapper frutificacaoMapper,
+                        MaturacaoMapper maturacaoMapper,
+                        FimCicloMapper fimCicloMapper) {
         this.cicloRepository = cicloRepository;
         this.cicloMapper = cicloMapper;
-        this.germinacaoService = germinacaoService;
-        this.mudaService = mudaService;
-        this.crecimentoService = crecimentoService;
-        this.floracaoService = floracaoService;
-        this.frutificacaoService = frutificacaoService;
-        this.maturacaoService = maturacaoService;
-        this.fimCicloService = fimCicloService;
+        this.casePlantaGet = casePlantaGet;
+        this.caseGerminacaoCicloPost = caseGerminacaoCicloPost;
+        this.caseMudaCicloPost = caseMudaCicloPost;
+        this.caseCrecimentoCicloPost = caseCrecimentoCicloPost;
+        this.caseFloracaoCicloPost = caseFloracaoCicloPost;
+        this.caseFrutificacaoCicloPost = caseFrutificacaoCicloPost;
+        this.caseMaturacaoCicloPost = caseMaturacaoCicloPost;
+        this.caseFimCicloPost = caseFimCicloPost;
+        this.caseMudaCicloPut = caseMudaCicloPut;
+        this.caseCrecimentoCicloPut = caseCrecimentoCicloPut;
+        this.caseGerminacaoCicloPut = caseGerminacaoCicloPut;
+        this.caseFloracaoCicloPut = caseFloracaoCicloPut;
+        this.caseFrutificacaoCicloPut = caseFrutificacaoCicloPut;
+        this.caseMaturacaoCicloPut = caseMaturacaoCicloPut;
+        this.caseFimCicloPut = caseFimCicloPut;
+        this.caseGerminacaoCicloDelete = caseGerminacaoCicloDelete;
+        this.caseMudaCicloDelete = caseMudaCicloDelete;
+        this.caseCrecimentoCicloDelete = caseCrecimentoCicloDelete;
+        this.caseFloracaoCicloDelete = caseFloracaoCicloDelete;
+        this.caseFrutificacaoCicloDelete = caseFrutificacaoCicloDelete;
+        this.caseMaturacaoCicloDelete = caseMaturacaoCicloDelete;
+        this.caseFimCicloDelete = caseFimCicloDelete;
         this.germinacaoMapper = germinacaoMapper;
         this.mudaMapper = mudaMapper;
         this.crecimentoMapper = crecimentoMapper;
@@ -57,6 +142,7 @@ public class CicloService {
     }
 
 
+    @Override
     public ResponseEntity<Ciclo> BuscarCicloPorId(Long id)
     {
         try
@@ -74,18 +160,19 @@ public class CicloService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Override
     public ResponseEntity<Ciclo> NovoCiclo()
     {
         try
         {
             CicloEntity entity = new CicloEntity();
-            Germinacao germinacao = germinacaoService.NovoCiclo().getBody();
-            Muda muda = mudaService.NovoCiclo().getBody();
-            Crecimento crecimento = crecimentoService.NovoCiclo().getBody();
-            Floracao floracao = floracaoService.NovoCiclo().getBody();
-            Frutificacao frutificacao = frutificacaoService.NovoCiclo().getBody();
-            Maturacao maturacao = maturacaoService.NovoCiclo().getBody();
-            Fim fim = fimCicloService.NovoCiclo().getBody();
+            Germinacao germinacao = caseGerminacaoCicloPost.NovoCiclo().getBody();
+            Muda muda = caseMudaCicloPost.NovoCiclo().getBody();
+            Crecimento crecimento = caseCrecimentoCicloPost.NovoCiclo().getBody();
+            Floracao floracao = caseFloracaoCicloPost.NovoCiclo().getBody();
+            Frutificacao frutificacao = caseFrutificacaoCicloPost.NovoCiclo().getBody();
+            Maturacao maturacao = caseMaturacaoCicloPost.NovoCiclo().getBody();
+            Fim fim = caseFimCicloPost.NovoCiclo().getBody();
             GerminacaoEntity germinacaoEntity = germinacaoMapper.DtoToEntity(germinacao);
             MudaEntity mudaEntity = mudaMapper.DtoToEntity(muda);
             CrecimentoEntity crecimentoEntity = crecimentoMapper.DtoToEntity(crecimento);
@@ -104,66 +191,46 @@ public class CicloService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<Ciclo> AlterarCiclo(Long id, CICLO ciclo)
+    @Override
+    public ResponseEntity<Ciclo> AlterarCiclo(Long plantaId,CICLO ciclo)
     {
         try
         {
-            if(id == null){throw new NullargumentsException();}
+            if(plantaId == null){throw new NullargumentsException();}
             if(ciclo == null){throw new NullargumentsException();}
-            CicloEntity entity = cicloRepository.findById(id).orElseThrow(
-                    EntityNotFoundException::new
-            );
+            Planta planta = casePlantaGet.BuscarPlantaPorId(plantaId).getBody();
+            Ciclo cicloBody = BuscarCicloPorId(planta.getCiclo().getId()).getBody();
+            CicloEntity entity = cicloMapper.DtoToEntity(cicloBody);
             Boolean valida = entity.ValidaCiclo(ciclo);
             if(valida.equals(Boolean.FALSE)){throw new IllegalActionException();}
             if(ciclo.equals(MUDA))
             {
-              germinacaoService.AtualizarEntidadeFim(entity.getGerminacao().getId());
-              mudaService.AtualizarEntidadeInicio(entity.getMuda().getId());
+              caseGerminacaoCicloPut.AtualizarEntidadeFim(entity.getGerminacao().getId());
+              caseMudaCicloPut.AtualizarEntidadeInicio(entity.getMuda().getId());
             }
             if(ciclo.equals(CRESCIMENTO))
             {
-                mudaService.AtualizarEntidadeFim(entity.getMuda().getId());
-                crecimentoService.AtualizarEntidadeInicio(entity.getCrecimento().getId());
+                caseMudaCicloPut.AtualizarEntidadeFim(entity.getMuda().getId());
+                caseCrecimentoCicloPut.AtualizarEntidadeInicio(entity.getCrecimento().getId());
             }
             if(ciclo.equals(FLORACAO))
             {
-              crecimentoService.AtualizarEntidadeFim(entity.getCrecimento().getId());
-              floracaoService.AtualizarEntidadeInicio(entity.getFloracao().getId());
+              caseCrecimentoCicloPut.AtualizarEntidadeFim(entity.getCrecimento().getId());
+              caseFloracaoCicloPut.AtualizarEntidadeInicio(entity.getFloracao().getId());
             }
             if(ciclo.equals(FRUTIFICACAO))
             {
-              floracaoService.AtualizarEntidadeFim(entity.getFloracao().getId());
-              frutificacaoService.AtualizarEntidadeInicio(entity.getFrutificacao().getId());
+              caseFloracaoCicloPut.AtualizarEntidadeFim(entity.getFloracao().getId());
+              caseFrutificacaoCicloPut.AtualizarEntidadeInicio(entity.getFrutificacao().getId());
             }
             if(ciclo.equals(MATURACAO))
             {
-                frutificacaoService.AtualizarEntidadeFim(entity.getFrutificacao().getId());
-                maturacaoService.AtualizarEntidadeInicio(entity.getMaturacao().getId());
+                caseFrutificacaoCicloPut.AtualizarEntidadeFim(entity.getFrutificacao().getId());
+                caseMaturacaoCicloPut.AtualizarEntidadeInicio(entity.getMaturacao().getId());
             }
             if(ciclo.equals(FIM))
             {
-                if(ciclo.equals(MUDA))
-                {
-                    mudaService.AtualizarEntidadeFim(entity.getMuda().getId());
-                }
-                if(ciclo.equals(CRESCIMENTO))
-                {
-                    crecimentoService.AtualizarEntidadeFim(entity.getCrecimento().getId());
-                }
-                if(ciclo.equals(FLORACAO))
-                {
-                    floracaoService.AtualizarEntidadeFim(entity.getFloracao().getId());
-                }
-                if(ciclo.equals(FRUTIFICACAO))
-                {
-                    frutificacaoService.AtualizarEntidadeFim(entity.getFrutificacao().getId());
-                }
-                if(ciclo.equals(MATURACAO))
-                {
-                    maturacaoService.AtualizarEntidadeFim(entity.getMaturacao().getId());
-                }
-                Fim fim = fimCicloService.BuscarCorpoPorId(entity.getFim().getId()).getBody();
-
+                caseFimCicloPut.AtualizarEntidade(cicloBody,planta.getLocalizacao());
             }
             entity.SetNovoCiclo(ciclo);
             cicloRepository.save(entity);
@@ -176,7 +243,7 @@ public class CicloService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-
+    @Override
     public ResponseEntity<Ciclo> SalvarAlteracao(Ciclo ciclo)
     {
         try
@@ -189,6 +256,45 @@ public class CicloService {
                 return new ResponseEntity<>(response,HttpStatus.OK);
             }
             else {throw new NullargumentsException();}
+        }
+        catch (Exception e)
+        {
+            e.getMessage();
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<Void> DeletarPorId(Long cicloId)
+    {
+        try
+        {
+            if(cicloId == null){throw new NullargumentsException();}
+            Ciclo ciclo = BuscarCicloPorId(cicloId).getBody();
+            CicloEntity entity = cicloMapper.DtoToEntity(ciclo);
+            Long germinacaoCicloId = ciclo.getGerminacao().getId();
+            Long mudaCicloId = ciclo.getMuda().getId();
+            Long crecimentoCicloId = ciclo.getCrecimento().getId();
+            Long floracaoCicloId = ciclo.getFloracao().getId();
+            Long frutificacaoCicloId = ciclo.getFrutificacao().getId();
+            Long maturacaoCicloId = ciclo.getMaturacao().getId();
+            Long fimCicloId = ciclo.getFim().getId();
+            //resetar entidade
+            entity.ResetEntity();
+            //salvar
+            ciclo = cicloMapper.EntityToDto(entity);
+            SalvarAlteracao(ciclo);
+            //chamar os case delete dos ciclos
+            caseGerminacaoCicloDelete.DeletarPorId(germinacaoCicloId);
+            caseMudaCicloDelete.DeletarPorId(mudaCicloId);
+            caseCrecimentoCicloDelete.DeletarPorId(crecimentoCicloId);
+            caseFloracaoCicloDelete.DeletarPorId(floracaoCicloId);
+            caseFrutificacaoCicloDelete.DeletarPorId(frutificacaoCicloId);
+            caseMaturacaoCicloDelete.DeletarPorId(maturacaoCicloId);
+            caseFimCicloDelete.DeletarPorId(fimCicloId);
+            //deletar corpo
+            cicloRepository.deleteById(ciclo.getId());
+            return new ResponseEntity<>(HttpStatus.OK);
         }
         catch (Exception e)
         {

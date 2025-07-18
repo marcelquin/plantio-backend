@@ -1,6 +1,7 @@
 package App.Config;
 
 import App.Infra.Gateway.AreaGateway;
+import App.Infra.UseCase.Area.UseCaseAreaDelete;
 import App.Infra.UseCase.Area.UseCaseAreaGet;
 import App.Infra.UseCase.Area.UseCaseAreaPost;
 import App.Infra.UseCase.Area.UseCaseAreaPut;
@@ -21,4 +22,8 @@ public class AreaConfig {
     @Bean
     UseCaseAreaGet useCaseAreaGet(AreaGateway areaGateway)
     {return new UseCaseAreaGet(areaGateway);}
+
+    @Bean
+    UseCaseAreaDelete useCaseAreaDelete(AreaGateway areaGateway)
+    {return new UseCaseAreaDelete(areaGateway);}
 }

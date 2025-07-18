@@ -23,6 +23,10 @@ public class UseCasePlantaPut {
                                                @RequestParam String ciclo)
     {return plantaGateway.AlterarCiclo(id, ciclo);}
 
+    public ResponseEntity<Planta> AtualizarLocalizacao(@RequestParam Long plantaId,
+                                                       @RequestParam String referenciaLocalizacao)
+    {return plantaGateway.AtualizarLocalizacao(plantaId, referenciaLocalizacao);}
+
     public ResponseEntity<Planta> AlterarLocalizacao(@RequestParam Long plantaId,
                                                      @RequestParam Long localizacaoId)
     {return plantaGateway.AlterarLocalizacao(plantaId, localizacaoId);}

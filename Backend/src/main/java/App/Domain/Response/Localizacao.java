@@ -8,13 +8,13 @@ public class Localizacao {
 
     private Long id;
 
-    private int numeroLinha;
-
-    private String nomeArea;
-
     private String referencia;
 
     private Boolean disponivel;
+
+    private int numeroLocalizacao;
+
+    private Planta planta;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime timeStamp;
@@ -22,13 +22,29 @@ public class Localizacao {
     public Localizacao() {
     }
 
-    public Localizacao(Long id, int numeroLinha, String nomeArea, String referencia, Boolean disponivel, LocalDateTime timeStamp) {
+    public Localizacao(Long id, String referencia, Boolean disponivel, int numeroLocalizacao, Planta planta, LocalDateTime timeStamp) {
         this.id = id;
-        this.numeroLinha = numeroLinha;
-        this.nomeArea = nomeArea;
         this.referencia = referencia;
         this.disponivel = disponivel;
+        this.numeroLocalizacao = numeroLocalizacao;
+        this.planta = planta;
         this.timeStamp = timeStamp;
+    }
+
+    public int getNumeroLocalizacao() {
+        return numeroLocalizacao;
+    }
+
+    public void setNumeroLocalizacao(int numeroLocalizacao) {
+        this.numeroLocalizacao = numeroLocalizacao;
+    }
+
+    public Planta getPlanta() {
+        return planta;
+    }
+
+    public void setPlanta(Planta planta) {
+        this.planta = planta;
     }
 
     public Long getId() {
@@ -37,22 +53,6 @@ public class Localizacao {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public int getNumeroLinha() {
-        return numeroLinha;
-    }
-
-    public void setNumeroLinha(int numeroLinha) {
-        this.numeroLinha = numeroLinha;
-    }
-
-    public String getNomeArea() {
-        return nomeArea;
-    }
-
-    public void setNomeArea(String nomeArea) {
-        this.nomeArea = nomeArea;
     }
 
     public String getReferencia() {

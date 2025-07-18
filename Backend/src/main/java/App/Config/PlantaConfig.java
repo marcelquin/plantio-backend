@@ -1,6 +1,7 @@
 package App.Config;
 
 import App.Infra.Gateway.PlantaGateway;
+import App.Infra.UseCase.Planta.UseCasePlantaDelete;
 import App.Infra.UseCase.Planta.UseCasePlantaGet;
 import App.Infra.UseCase.Planta.UseCasePlantaPost;
 import App.Infra.UseCase.Planta.UseCasePlantaPut;
@@ -23,4 +24,8 @@ public class PlantaConfig {
     @Bean
     UseCasePlantaGet useCasePlantaGet(PlantaGateway plantaGateway)
     {return new UseCasePlantaGet(plantaGateway);}
+
+    @Bean
+    UseCasePlantaDelete useCasePlantaDelete(PlantaGateway plantaGateway)
+    {return new UseCasePlantaDelete(plantaGateway);}
 }

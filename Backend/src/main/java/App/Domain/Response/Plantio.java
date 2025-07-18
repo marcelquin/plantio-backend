@@ -12,11 +12,11 @@ public class Plantio {
 
     private Long id;
 
+    private String identificador;
+
     private int numero;
 
     private List<Linha> linhas;
-
-    private Boolean disponivel;
 
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate DataAdubacao;
@@ -29,14 +29,22 @@ public class Plantio {
     public Plantio() {
     }
 
-    public Plantio(Long id, int numero, List<Linha> linhas, Boolean disponivel, LocalDate dataAdubacao, List<String> notificacoes, LocalDateTime timeStamp) {
+    public Plantio(Long id, String identificador, int numero, List<Linha> linhas, LocalDate dataAdubacao, List<String> notificacoes, LocalDateTime timeStamp) {
         this.id = id;
+        this.identificador = identificador;
         this.numero = numero;
         this.linhas = linhas;
-        this.disponivel = disponivel;
         DataAdubacao = dataAdubacao;
         this.notificacoes = notificacoes;
         this.timeStamp = timeStamp;
+    }
+
+    public String getIdentificador() {
+        return identificador;
+    }
+
+    public void setIdentificador(String identificador) {
+        this.identificador = identificador;
     }
 
     public LocalDate getDataAdubacao() {
@@ -77,14 +85,6 @@ public class Plantio {
 
     public void setLinhas(List<Linha> linhas) {
         this.linhas = linhas;
-    }
-
-    public Boolean getDisponivel() {
-        return disponivel;
-    }
-
-    public void setDisponivel(Boolean disponivel) {
-        this.disponivel = disponivel;
     }
 
     public LocalDateTime getTimeStamp() {

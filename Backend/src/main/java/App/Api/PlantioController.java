@@ -3,7 +3,9 @@ package App.Api;
 import App.Domain.Bussness.PlantioService;
 import App.Domain.Response.Area;
 import App.Domain.Response.Plantio;
+import App.Infra.UseCase.Plantio.UseCasePlantioDelete;
 import App.Infra.UseCase.Plantio.UseCasePlantioGet;
+import App.Infra.UseCase.Plantio.UseCasePlantioPost;
 import App.Infra.UseCase.Plantio.UseCasePlantioPut;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,10 +26,14 @@ public class PlantioController {
 
     private final UseCasePlantioGet casePlantioGet;
     private final UseCasePlantioPut casePlantioPut;
+    private final UseCasePlantioPost casePlantioPost;
+    private final UseCasePlantioDelete casePlantioDelete;
 
-    public PlantioController(UseCasePlantioGet casePlantioGet, UseCasePlantioPut casePlantioPut) {
+    public PlantioController(UseCasePlantioGet casePlantioGet, UseCasePlantioPut casePlantioPut, UseCasePlantioPost casePlantioPost, UseCasePlantioDelete casePlantioDelete) {
         this.casePlantioGet = casePlantioGet;
         this.casePlantioPut = casePlantioPut;
+        this.casePlantioPost = casePlantioPost;
+        this.casePlantioDelete = casePlantioDelete;
     }
 
 
@@ -43,29 +49,16 @@ public class PlantioController {
     {return casePlantioGet.ListarPlantio();}
 
 
-    @Operation(summary = "Lista Registros da tabela", method = "GET")
+    @Operation(summary = "Salva Registro na tabela", method = "POST")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
             @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
             @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
             @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
     })
-    @GetMapping("ListarPlantioDisponiveis")
-    public ResponseEntity<List<Plantio>> ListarPlantioDisponiveis()
-    {return casePlantioGet.ListarPlantioDisponiveis();}
-
-    @Operation(summary = "Edita Registro da tabela adicionando entidades", method = "PUT")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
-            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
-            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
-            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
-    })
-    @PutMapping("ReduzirLinhas")
-    public ResponseEntity<Plantio> ReduzirLinhas(@RequestParam Long id,
-                                                 @RequestParam int numeroLinhas,
-                                                 @RequestParam int numeroLocalizacoes)
-    {return casePlantioPut.ReduzirLinhas(id, numeroLinhas, numeroLocalizacoes);}
+    @PostMapping("NovoPlantio")
+    public ResponseEntity<Plantio> NovoPlantio(@RequestParam Long areaId)
+    {return casePlantioPost.NovoPlantio(areaId);}
 
     @Operation(summary = "Edita Registro da tabela adicionando entidades", method = "PUT")
     @ApiResponses(value = {
@@ -78,4 +71,16 @@ public class PlantioController {
     public ResponseEntity<Plantio> NovaAdubacao(@RequestParam Long id,
                                                 @RequestParam String relatorio)
     {return casePlantioPut.NovaAdubacao(id, relatorio);}
+
+    @Operation(summary = "Deleta registro da tabela", method = "DELETE")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
+            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
+            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
+    })
+    @DeleteMapping("DeletarPlantioPorId")
+    public ResponseEntity<Void> DeletarPlantioPorId(@RequestParam Long plantioId)
+    {return casePlantioDelete.DeletarPlantioPorId(plantioId); }
+
 }

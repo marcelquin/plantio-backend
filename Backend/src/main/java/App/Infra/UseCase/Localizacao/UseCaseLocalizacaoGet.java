@@ -3,6 +3,7 @@ package App.Infra.UseCase.Localizacao;
 import App.Domain.Response.Localizacao;
 import App.Infra.Gateway.LocalizacaoGateway;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -23,4 +24,10 @@ public class UseCaseLocalizacaoGet {
 
     public ResponseEntity<List<Localizacao>> ListarLocalizacoesNaoDisponiveis()
     {return localizacaoGateway.ListarLocalizacoesNaoDisponiveis();}
+
+    public ResponseEntity<Localizacao> BuscarLocalizacaoPorId(@RequestParam Long id)
+    {return localizacaoGateway.BuscarLocalizacaoPorId(id);}
+
+    public ResponseEntity<Localizacao> BuscarLocalizacaoPorReferencia(@RequestParam String referencia)
+    {return localizacaoGateway.BuscarLocalizacaoPorReferencia(referencia);}
 }

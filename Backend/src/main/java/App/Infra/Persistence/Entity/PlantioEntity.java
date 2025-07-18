@@ -17,12 +17,12 @@ public class PlantioEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private String identificador;
+
     private int numero;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<LinhaEntity> linhas;
-
-    private Boolean disponivel;
 
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate DataAdubacao;
@@ -35,14 +35,22 @@ public class PlantioEntity {
     public PlantioEntity() {
     }
 
-    public PlantioEntity(Long id, int numero, List<LinhaEntity> linhas, Boolean disponivel, LocalDate dataAdubacao, List<String> notificacoes, LocalDateTime timeStamp) {
+    public PlantioEntity(Long id, String identificador, int numero, List<LinhaEntity> linhas, LocalDate dataAdubacao, List<String> notificacoes, LocalDateTime timeStamp) {
         this.id = id;
+        this.identificador = identificador;
         this.numero = numero;
         this.linhas = linhas;
-        this.disponivel = disponivel;
         DataAdubacao = dataAdubacao;
         this.notificacoes = notificacoes;
         this.timeStamp = timeStamp;
+    }
+
+    public String getIdentificador() {
+        return identificador;
+    }
+
+    public void setIdentificador(String identificador) {
+        this.identificador = identificador;
     }
 
     public LocalDate getDataAdubacao() {
@@ -85,13 +93,6 @@ public class PlantioEntity {
         this.linhas = linhas;
     }
 
-    public Boolean getDisponivel() {
-        return disponivel;
-    }
-
-    public void setDisponivel(Boolean disponivel) {
-        this.disponivel = disponivel;
-    }
 
     public LocalDateTime getTimeStamp() {
         return timeStamp;
@@ -101,16 +102,15 @@ public class PlantioEntity {
         this.timeStamp = timeStamp;
     }
 
-    public void SetInfoInicial(List<LinhaEntity> linhas, int numero)
+    public void SetInfoInicial(String areaNome, int numero)
     {
         List<LinhaEntity> list = new ArrayList<>();
         List<String> list1 = new ArrayList<>();
         this.notificacoes = list1;
         this.linhas = list;
         this.numero = numero;
-        this.disponivel = Boolean.TRUE;
         this.timeStamp = LocalDateTime.now();
-        this.linhas.addAll(linhas);
+        this.identificador = areaNome+"_"+numero;
     }
 
     public void SetNovaAdubacao(String relatorio)
@@ -118,5 +118,16 @@ public class PlantioEntity {
         this.notificacoes.add(relatorio);
         this.timeStamp = LocalDateTime.now();
         this.setDataAdubacao(LocalDate.now());
+    }
+
+    public void AlterarIdentificador(String areaNome)
+    {
+        this.identificador = areaNome+"_"+this.numero;
+        this.timeStamp = LocalDateTime.now();
+    }
+
+    public void ResetEntity()
+    {
+        this.linhas = null;
     }
 }

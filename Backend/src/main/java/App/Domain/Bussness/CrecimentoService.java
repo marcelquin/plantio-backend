@@ -4,6 +4,7 @@ import App.Domain.Response.Crecimento;
 import App.Domain.Response.Germinacao;
 import App.Infra.Exceptions.EntityNotFoundException;
 import App.Infra.Exceptions.NullargumentsException;
+import App.Infra.Gateway.CrecimentoCicloGateway;
 import App.Infra.Mapper.CrecimentoMapper;
 import App.Infra.Mapper.GerminacaoMapper;
 import App.Infra.Persistence.Entity.CrecimentoEntity;
@@ -15,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CrecimentoService {
+public class CrecimentoService implements CrecimentoCicloGateway {
 
 
     private final CrecimentoRepository crecimentoRepository;
@@ -26,6 +27,7 @@ public class CrecimentoService {
         this.crecimentoMapper = crecimentoMapper;
     }
 
+    @Override
     public ResponseEntity<Crecimento> BuscarCorpoPorId(Long id)
     {
         try
@@ -44,6 +46,7 @@ public class CrecimentoService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Override
     public ResponseEntity<Crecimento> NovoCiclo()
     {
         try
@@ -61,6 +64,7 @@ public class CrecimentoService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Override
     public ResponseEntity<Crecimento> AtualizarEntidadeInicio(Long id)
     {
         try
@@ -69,9 +73,9 @@ public class CrecimentoService {
             Crecimento crecimento = BuscarCorpoPorId(id).getBody();
             CrecimentoEntity entity = crecimentoMapper.DtoToEntity(crecimento);
             entity.Setdados();
-            crecimentoRepository.save(entity);
-            Crecimento response = crecimentoMapper.EntityToDto(entity);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            crecimento = crecimentoMapper.EntityToDto(entity);
+            SalvarAlteracao(crecimento);
+            return new ResponseEntity<>(crecimento, HttpStatus.OK);
         }
         catch (Exception e)
         {
@@ -80,6 +84,7 @@ public class CrecimentoService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Override
     public ResponseEntity<Crecimento> AtualizarEntidadeFim(Long id)
     {
         try
@@ -88,9 +93,9 @@ public class CrecimentoService {
             Crecimento crecimento = BuscarCorpoPorId(id).getBody();
             CrecimentoEntity entity = crecimentoMapper.DtoToEntity(crecimento);
             entity.FimCiclo();
-            crecimentoRepository.save(entity);
-            Crecimento response = crecimentoMapper.EntityToDto(entity);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            crecimento = crecimentoMapper.EntityToDto(entity);
+            SalvarAlteracao(crecimento);
+            return new ResponseEntity<>(crecimento, HttpStatus.OK);
         }
         catch (Exception e)
         {
@@ -99,12 +104,30 @@ public class CrecimentoService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<Void> SalvarAlteracao(Crecimento crecimento)
+    @Override
+    public ResponseEntity<Crecimento> SalvarAlteracao(Crecimento crecimento)
     {
         try
         {
             CrecimentoEntity entity = crecimentoMapper.DtoToEntity(crecimento);
             crecimentoRepository.save(entity);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            e.getMessage();
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<Void> DeletarPorId(Long id)
+    {
+        try
+        {
+            if(id == null){throw new NullargumentsException();}
+            Crecimento crecimento = BuscarCorpoPorId(id).getBody();
+            crecimentoRepository.deleteById(crecimento.getId());
             return new ResponseEntity<>(HttpStatus.OK);
         }
         catch (Exception e)

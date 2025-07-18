@@ -9,6 +9,13 @@ import App.Infra.Mapper.*;
 import App.Infra.Persistence.Entity.*;
 import App.Infra.Persistence.Enum.CICLO;
 import App.Infra.Persistence.Repository.PlantaRepository;
+import App.Infra.UseCase.Ciclo.UseCaseCicloDelete;
+import App.Infra.UseCase.Ciclo.UseCaseCicloGet;
+import App.Infra.UseCase.Ciclo.UseCaseCicloPost;
+import App.Infra.UseCase.Ciclo.UseCaseCicloPut;
+import App.Infra.UseCase.Localizacao.UseCaseLocalizacaoGet;
+import App.Infra.UseCase.Localizacao.UseCaseLocalizacaoPut;
+import App.Infra.UseCase.Mensagem.UseCaseMensagemPost;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,23 +34,38 @@ public class PlantaService implements PlantaGateway {
 
     private final PlantaRepository plantaRepository;
     private final PlantaMapper plantaMapper;
-    private final PlantioService plantioService;
-    private final PlantioMapper plantioMapper;
+    private final UseCaseCicloGet caseCicloGet;
+    private final UseCaseCicloPost caseCicloPost;
+    private final UseCaseCicloPut caseCicloPut;
+    private final UseCaseCicloDelete caseCicloDelete;
     private final CicloMapper cicloMapper;
-    private final CicloService cicloService;
-    private final LocalizacaoMapper localizacaoMapper;
-    private final LocalizacaoService localizacaoService;
+    private final UseCaseMensagemPost useCaseMensagemPost;
+    private final UseCaseLocalizacaoGet useCaseLocalizacaoGet;
+    private final UseCaseLocalizacaoPut useCaseLocalizacaoPut;
 
-    public PlantaService(PlantaRepository plantaRepository, PlantaMapper plantaMapper, PlantioService plantioService, PlantioMapper plantioMapper, CicloMapper cicloMapper, CicloService cicloService, LocalizacaoMapper localizacaoMapper, LocalizacaoService localizacaoService) {
+    public PlantaService(PlantaRepository plantaRepository,
+                         PlantaMapper plantaMapper,
+                         @Lazy UseCaseCicloGet caseCicloGet,
+                         @Lazy UseCaseCicloPost caseCicloPost,
+                         @Lazy UseCaseCicloPut caseCicloPut,
+                         @Lazy UseCaseCicloDelete caseCicloDelete,
+                         CicloMapper cicloMapper,
+                         @Lazy UseCaseMensagemPost useCaseMensagemPost,
+                         @Lazy UseCaseLocalizacaoGet useCaseLocalizacaoGet,
+                         @Lazy UseCaseLocalizacaoPut useCaseLocalizacaoPut)
+    {
         this.plantaRepository = plantaRepository;
         this.plantaMapper = plantaMapper;
-        this.plantioService = plantioService;
-        this.plantioMapper = plantioMapper;
+        this.caseCicloGet = caseCicloGet;
+        this.caseCicloPost = caseCicloPost;
+        this.caseCicloPut = caseCicloPut;
+        this.caseCicloDelete = caseCicloDelete;
         this.cicloMapper = cicloMapper;
-        this.cicloService = cicloService;
-        this.localizacaoMapper = localizacaoMapper;
-        this.localizacaoService = localizacaoService;
+        this.useCaseMensagemPost = useCaseMensagemPost;
+        this.useCaseLocalizacaoGet = useCaseLocalizacaoGet;
+        this.useCaseLocalizacaoPut = useCaseLocalizacaoPut;
     }
+
 
     @Override
     public ResponseEntity<List<Planta>> ListarPlantas()
@@ -258,20 +280,15 @@ public class PlantaService implements PlantaGateway {
             if(nomePopular == null){throw new NullargumentsException();}
             if(instrucoes == null){throw new NullargumentsException();}
             if(localizacaoId == null){throw new NullargumentsException();}
+            Localizacao localizacao = useCaseLocalizacaoGet.BuscarLocalizacaoPorId(localizacaoId).getBody();
             PlantaEntity entity = new PlantaEntity();
-            Ciclo ciclo = cicloService.NovoCiclo().getBody();
-            cicloService.AlterarCiclo(ciclo.getId(),CICLO.GERMINACAO);
+            Ciclo ciclo = caseCicloPost.NovoCiclo().getBody();
+            caseCicloPut.AlterarCiclo(ciclo.getId(),CICLO.GERMINACAO);
             CicloEntity cicloEntity = cicloMapper.DtoToEntity(ciclo);
-            entity.setCiclo(cicloEntity);
-            Localizacao localizacao = localizacaoService.BuscarLocalizacaoPorId(localizacaoId).getBody();
-            LocalizacaoEntity localizacaoEntity = localizacaoMapper.DtoToEntity(localizacao);
-            entity.setLocalizacao(localizacaoEntity);
-            localizacaoEntity.SetPlanta();
-            Localizacao localizacaoRequest = localizacaoMapper.EntityToDto(localizacaoEntity);
-            localizacaoService.SalvarAlteracao(localizacaoRequest);
-            entity.SetInfo(nomePopular,nomeCientifico,instrucoes);
+            entity.SetInfo(nomePopular,nomeCientifico,instrucoes,localizacao.getReferencia(),cicloEntity);
             plantaRepository.save(entity);
             Planta response = plantaMapper.EntityToDto(entity);
+            useCaseLocalizacaoPut.IndisponibilizarLocalizacao(localizacao.getId(),response);
             return  new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e)
         {
@@ -285,15 +302,18 @@ public class PlantaService implements PlantaGateway {
     {
         try
         {
-            if(plantaId != null && nomePopular != null && nomeCientifico != null)
-            {
-                Planta planta = BuscarPlantaPorId(plantaId).getBody();
-                PlantaEntity entity = plantaMapper.DtoToEntity(planta);
-                entity.EditInfo(nomePopular,nomeCientifico,instrucoes);
-                plantaRepository.save(entity);
-                return new ResponseEntity<>(planta, HttpStatus.OK);
-            }
-            else {throw new NullargumentsException();}
+            if(plantaId == null){throw new NullargumentsException();}
+            if(nomeCientifico == null){throw new NullargumentsException();}
+            if(nomePopular == null){throw new NullargumentsException();}
+            if(instrucoes == null){throw new NullargumentsException();}
+            Planta planta = BuscarPlantaPorId(plantaId).getBody();
+            PlantaEntity entity = plantaMapper.DtoToEntity(planta);
+            entity.EditInfo(nomePopular,nomeCientifico,instrucoes);
+            plantaRepository.save(entity);
+            String identificadorPlantio = useCaseMensagemPost.setIdentificadorPlantio(planta.getLocalizacao());
+            String mensagem = "Na data de "+LocalDateTime.now()+" Houve uma alteração nos dados cadastrais na planta "+planta.getNomePopular();
+            useCaseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
+            return new ResponseEntity<>(planta, HttpStatus.OK);
         } catch (Exception e)
         {
             e.getMessage();
@@ -311,17 +331,12 @@ public class PlantaService implements PlantaGateway {
                 Planta planta = BuscarPlantaPorId(id).getBody();
                 PlantaEntity entity = plantaMapper.DtoToEntity(planta);
                 CICLO cicloConvertido = RetornaCicloAtual(ciclo);
-                cicloService.AlterarCiclo(entity.getCiclo().getId(), cicloConvertido);
-                if(cicloConvertido.equals(FIM))
-                {
-                    Localizacao localizacao = localizacaoService.BuscarLocalizacaoPorId(entity.getLocalizacao().getId()).getBody();
-                    localizacao.setDisponivel(Boolean.TRUE);
-                    localizacao.setTimeStamp(LocalDateTime.now());
-                    localizacaoService.SalvarAlteracao(localizacao);
-                    entity.FimCiclo();
-                }
+                caseCicloPut.AlterarCiclo(planta.getId(), cicloConvertido);
                 plantaRepository.save(entity);
                 Planta response = plantaMapper.EntityToDto(entity);
+                String identificadorPlantio = useCaseMensagemPost.setIdentificadorPlantio(planta.getLocalizacao());
+                String mensagem = "Na data de "+LocalDateTime.now()+" Houve uma alteração de Ciclo na planta "+planta.getNomePopular()+", estando agora no ciclo:"+planta.getCiclo().getCiclo();
+                useCaseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
                 return new ResponseEntity<>(response,HttpStatus.OK);
             }
             else {throw new NullargumentsException();}
@@ -378,42 +393,18 @@ public class PlantaService implements PlantaGateway {
     }
 
     @Override
-    public ResponseEntity<Planta> AlterarLocalizacao(Long plantaId, Long localizacaoId)
+    public ResponseEntity<Planta> AtualizarLocalizacao(Long plantaId, String referenciaLocalizacao)
     {
         try
         {
-            if(plantaId != null)
-            {
-               if(localizacaoId < 0L){throw new IllegalActionException();}
-               if(plantaId != null)
-               {
-                   Planta planta = BuscarPlantaPorId(plantaId).getBody();
-                   PlantaEntity entity = plantaMapper.DtoToEntity(planta);
-                   if(entity.getLocalizacao() != null)
-                   {
-                       Localizacao localizacao = localizacaoService.BuscarLocalizacaoPorId(entity.getLocalizacao().getId()).getBody();
-                       LocalizacaoEntity localizacaoEntity = localizacaoMapper.DtoToEntity(localizacao);
-                       localizacaoEntity.setDisponivel(Boolean.TRUE);
-                       localizacao = localizacaoMapper.EntityToDto(localizacaoEntity);
-                       localizacaoService.SalvarAlteracao(localizacao);
-                       //entity.setBloco(null);
-                   }
-                   if(localizacaoId > 0L)
-                   {
-                        Localizacao novaLocalizacao = localizacaoService.BuscarLocalizacaoPorId(localizacaoId).getBody();
-                        LocalizacaoEntity novaLocalizacaoEntity = localizacaoMapper.DtoToEntity(novaLocalizacao);
-                        Localizacao localizacaoRequest = localizacaoMapper.EntityToDto(novaLocalizacaoEntity);
-                        localizacaoService.SalvarAlteracao(localizacaoRequest);
-                        entity.setLocalizacao(novaLocalizacaoEntity);
-                        entity.setTimeStamp(LocalDateTime.now());
-                        plantaRepository.save(entity);
-                        planta = plantaMapper.EntityToDto(entity);
-
-                   }
-                   return new ResponseEntity<>(planta, HttpStatus.OK);
-               }
-            }
-            else {throw new NullargumentsException();}
+            if(plantaId == null){throw new NullargumentsException();}
+            if(referenciaLocalizacao == null){throw new NullargumentsException();}
+            Planta planta = BuscarPlantaPorId(plantaId).getBody();
+            PlantaEntity entity = plantaMapper.DtoToEntity(planta);
+            entity.AlterarLocalizacao(referenciaLocalizacao);
+            planta = plantaMapper.EntityToDto(entity);
+            SalvarAlteracao(planta);
+            return new ResponseEntity<>(planta, HttpStatus.OK);
         }
         catch (Exception e)
         {
@@ -422,4 +413,51 @@ public class PlantaService implements PlantaGateway {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Override
+    public ResponseEntity<Planta> AlterarLocalizacao(Long plantaId, Long localizacaoId)
+    {
+        try
+        {
+            if(plantaId == null){throw new NullargumentsException();}
+            Planta planta = BuscarPlantaPorId(plantaId).getBody();
+            if(planta.getLocalizacao() == null){throw new IllegalActionException();}
+            Localizacao localizacao = useCaseLocalizacaoGet.BuscarLocalizacaoPorReferencia(planta.getLocalizacao()).getBody();
+            useCaseLocalizacaoPut.DisponibilizarLocalizacao(localizacao.getId());
+            Localizacao localizacaoAtual = useCaseLocalizacaoGet.BuscarLocalizacaoPorId(localizacaoId).getBody();
+            PlantaEntity entity = plantaMapper.DtoToEntity(planta);
+            entity.AlterarLocalizacao(localizacaoAtual.getReferencia());
+            planta = plantaMapper.EntityToDto(entity);
+            SalvarAlteracao(planta);
+            useCaseLocalizacaoPut.IndisponibilizarLocalizacao(localizacaoAtual.getId(),planta);
+            return new ResponseEntity<>(planta, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            e.getMessage();
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<Void> DeletarPlantaPorId(Long id)
+    {
+        try
+        {
+            if(id == null){throw new NullargumentsException();}
+            Planta planta = BuscarPlantaPorId(id).getBody();
+            Ciclo ciclo = caseCicloGet.BuscarCicloPorId(planta.getCiclo().getId()).getBody();
+            PlantaEntity entity = plantaMapper.DtoToEntity(planta);
+            entity.ResetEntity();
+            planta = plantaMapper.EntityToDto(entity);
+            SalvarAlteracao(planta);
+            caseCicloDelete.DeletarPorId(ciclo.getId());
+            plantaRepository.deleteById(planta.getId());
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            e.getMessage();
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
 }

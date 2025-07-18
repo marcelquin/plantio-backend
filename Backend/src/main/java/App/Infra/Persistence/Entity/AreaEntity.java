@@ -29,7 +29,7 @@ public class AreaEntity {
 
     private Boolean disponivel;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<PlantioEntity> plantios;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -131,6 +131,11 @@ public class AreaEntity {
         this.nome = nome;
         this.dimensao = dimensao;
         this.timeStamp = LocalDateTime.now();
+    }
+
+    public void ResetEntity()
+    {
+        this.plantios = new ArrayList<>();
     }
 
 

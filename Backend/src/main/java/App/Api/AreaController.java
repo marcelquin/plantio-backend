@@ -3,6 +3,7 @@ package App.Api;
 import App.Domain.Bussness.AreaService;
 import App.Domain.Response.Area;
 import App.Domain.Response.AreaPesquisaResponse;
+import App.Infra.UseCase.Area.UseCaseAreaDelete;
 import App.Infra.UseCase.Area.UseCaseAreaGet;
 import App.Infra.UseCase.Area.UseCaseAreaPost;
 import App.Infra.UseCase.Area.UseCaseAreaPut;
@@ -25,11 +26,13 @@ public class AreaController {
     private final UseCaseAreaPost caseAreaPost;
     private final UseCaseAreaPut caseAreaPut;
     private final UseCaseAreaGet caseAreaGet;
+    private final UseCaseAreaDelete caseAreaDelete;
 
-    public AreaController(UseCaseAreaPost caseAreaPost, UseCaseAreaPut caseAreaPut, UseCaseAreaGet caseAreaGet) {
+    public AreaController(UseCaseAreaPost caseAreaPost, UseCaseAreaPut caseAreaPut, UseCaseAreaGet caseAreaGet, UseCaseAreaDelete caseAreaDelete) {
         this.caseAreaPost = caseAreaPost;
         this.caseAreaPut = caseAreaPut;
         this.caseAreaGet = caseAreaGet;
+        this.caseAreaDelete = caseAreaDelete;
     }
 
 
@@ -43,17 +46,6 @@ public class AreaController {
     @GetMapping("ListarAreas")
     public ResponseEntity<List<Area>> ListarAreas()
     {return caseAreaGet.ListarAreas();}
-
-    @Operation(summary = "Lista Registros da tabela", method = "GET")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
-            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
-            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
-            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
-    })
-    @GetMapping("ListarAreasPesquisa")
-    public ResponseEntity<List<AreaPesquisaResponse>> ListarAreasPesquisa()
-    {return caseAreaGet.ListarAreasPesquisa();}
 
     @Operation(summary = "Busca Registro da tabela por id", method = "GET")
     @ApiResponses(value = {
@@ -87,11 +79,8 @@ public class AreaController {
     @PostMapping("NovaArea")
     public ResponseEntity<Area> NovaArea(@RequestParam String nome,
                                          @RequestParam String dimensao,
-                                         @RequestParam String gps,
-                                         @RequestParam int numeroPlantios,
-                                         @RequestParam int numeroLinhas,
-                                         @RequestParam int numeroLocalizacoes)
-    {return caseAreaPost.NovaArea(nome, dimensao, gps,numeroPlantios, numeroLinhas,numeroLocalizacoes);}
+                                         @RequestParam String gps)
+    {return caseAreaPost.NovaArea(nome, dimensao, gps);}
 
     @Operation(summary = "Edita Informações referentes a identificação da entidade", method = "PUT")
     @ApiResponses(value = {
@@ -107,30 +96,15 @@ public class AreaController {
                                                       @RequestParam String gps)
     {return caseAreaPut.EditarInformacoesArea(id, nome, dimensao, gps);}
 
-    @Operation(summary = "Edita Registro da tabela adicionando entidades", method = "PUT")
+    @Operation(summary = "Deleta registro da tabela", method = "DELETE")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
             @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
             @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
             @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
     })
-    @PutMapping("AmpliarPlantio")
-    public ResponseEntity<Area> AmpliarPlantio(@RequestParam Long id,
-                                               @RequestParam int numeroPlantio,
-                                               @RequestParam int numeroLinhas,
-                                               @RequestParam int numeroLocalizacoes)
-    {return caseAreaPut.AmpliarPlantio(id, numeroPlantio, numeroLinhas,numeroLocalizacoes);}
-
-    @Operation(summary = "Edita Registro da tabela adicionando entidades", method = "PUT")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
-            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
-            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
-            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
-    })
-    @PutMapping("ReduzirPlantio")
-    public ResponseEntity<Area> ReduzirPlantio(@RequestParam Long id,
-                                               @RequestParam int numeroPlantio)
-    {return caseAreaPut.ReduzirPlantio(id, numeroPlantio);}
+    @DeleteMapping("DeletarAreaPorId")
+    public ResponseEntity<Area> DeletarAreaPorId(@RequestParam Long areaId)
+    {return caseAreaDelete.DeletarAreaPorId(areaId);}
 
 }

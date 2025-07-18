@@ -9,9 +9,9 @@ public class Linha {
 
     private Long id;
 
-    private int numero;
+    private String identificador;
 
-    private Boolean disponivel;
+    private int numero;
 
     private List<Localizacao> localizacoes;
 
@@ -21,12 +21,20 @@ public class Linha {
     public Linha() {
     }
 
-    public Linha(Long id, int numero, Boolean disponivel, List<Localizacao> localizacoes, LocalDateTime timeStamp) {
+    public Linha(Long id, String identificador, int numero, List<Localizacao> localizacoes, LocalDateTime timeStamp) {
         this.id = id;
+        this.identificador = identificador;
         this.numero = numero;
-        this.disponivel = disponivel;
         this.localizacoes = localizacoes;
         this.timeStamp = timeStamp;
+    }
+
+    public String getIdentificador() {
+        return identificador;
+    }
+
+    public void setIdentificador(String identificador) {
+        this.identificador = identificador;
     }
 
     public List<Localizacao> getLocalizacoes() {
@@ -51,14 +59,6 @@ public class Linha {
 
     public void setNumero(int numero) {
         this.numero = numero;
-    }
-
-    public Boolean getDisponivel() {
-        return disponivel;
-    }
-
-    public void setDisponivel(Boolean disponivel) {
-        this.disponivel = disponivel;
     }
 
     public LocalDateTime getTimeStamp() {

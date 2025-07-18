@@ -58,12 +58,10 @@ public class CicloEntity {
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime timeStamp;
 
-    private List<String> notificacoes;
-
     public CicloEntity() {
     }
 
-    public CicloEntity(Long id, CICLO ciclo, LocalDate dataUltimoCiclo, LocalDate dataCicloAtual, GerminacaoEntity germinacao, MudaEntity muda, CrecimentoEntity crecimento, FloracaoEntity floracao, FrutificacaoEntity frutificacao, MaturacaoEntity maturacao, FimEntity fim, LocalDateTime timeStamp, List<String> notificacoes) {
+    public CicloEntity(Long id, CICLO ciclo, LocalDate dataUltimoCiclo, LocalDate dataCicloAtual, GerminacaoEntity germinacao, MudaEntity muda, CrecimentoEntity crecimento, FloracaoEntity floracao, FrutificacaoEntity frutificacao, MaturacaoEntity maturacao, FimEntity fim, LocalDateTime timeStamp) {
         this.id = id;
         this.ciclo = ciclo;
         this.dataUltimoCiclo = dataUltimoCiclo;
@@ -76,7 +74,6 @@ public class CicloEntity {
         this.maturacao = maturacao;
         this.fim = fim;
         this.timeStamp = timeStamp;
-        this.notificacoes = notificacoes;
     }
 
     public GerminacaoEntity getGerminacao() {
@@ -175,14 +172,6 @@ public class CicloEntity {
         this.timeStamp = timeStamp;
     }
 
-    public List<String> getNotificacoes() {
-        return notificacoes;
-    }
-
-    public void setNotificacoes(List<String> notificacoes) {
-        this.notificacoes = notificacoes;
-    }
-
     public void SetInfo(GerminacaoEntity germinacaoEntity,
                         MudaEntity mudaEntity,
                         CrecimentoEntity crecimentoEntity,
@@ -191,8 +180,6 @@ public class CicloEntity {
                         MaturacaoEntity maturacaoEntity,
                         FimEntity fimEntity)
     {
-        List<String>list = new ArrayList<>();
-        this.notificacoes = list;
         this.ciclo = CICLO.GERMINACAO;
         this.dataCicloAtual = LocalDate.now();
         this.timeStamp = LocalDateTime.now();
@@ -207,6 +194,7 @@ public class CicloEntity {
 
     public Boolean ValidaCiclo(CICLO ciclo)
     {
+        if(this.ciclo.equals(CICLO.FIM)){return Boolean.FALSE;}
         if(this.ciclo.equals(CICLO.GERMINACAO) && ciclo != CICLO.MUDA){return Boolean.FALSE;}
         if(this.ciclo.equals(CICLO.MUDA) && ciclo != CICLO.CRESCIMENTO){return Boolean.FALSE;}
         if(this.ciclo.equals(CICLO.CRESCIMENTO) && ciclo == CICLO.MUDA){return Boolean.FALSE;}
@@ -218,11 +206,9 @@ public class CicloEntity {
 
     public void FimCiclo(FimEntity fim)
     {
-        List<String>list = new ArrayList<>();
         this.dataCicloAtual = null;
         this.dataUltimoCiclo = null;
         this.ciclo = CICLO.FIM;
-        this.notificacoes = list;
         this.timeStamp = LocalDateTime.now();
     }
 
@@ -232,6 +218,17 @@ public class CicloEntity {
         this.dataUltimoCiclo = this.dataCicloAtual;
         this.dataCicloAtual = LocalDate.now();
         this.timeStamp = LocalDateTime.now();
+    }
+
+    public void ResetEntity()
+    {
+        this.germinacao = null;
+        this.muda = null;
+        this.crecimento = null;
+        this.floracao = null;
+        this.frutificacao = null;
+        this.maturacao = null;
+        this.fim = null;
     }
 
     public CICLO retornaCicloAnterior(CICLO novoCiclo)

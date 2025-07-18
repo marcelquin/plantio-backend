@@ -40,7 +40,15 @@ public interface PlantaGateway {
     public ResponseEntity<Planta> AlterarCiclo(@RequestParam Long id,
                                                @RequestParam String ciclo);
 
+    public ResponseEntity<Planta> AtualizarLocalizacao(@RequestParam Long plantaId,
+                                                       @RequestParam String referenciaLocalizacao);
+
+
     public ResponseEntity<Planta> AlterarLocalizacao(@RequestParam Long plantaId,
                                                      @RequestParam Long localizacaoId);
+
+
+    public ResponseEntity<Void> DeletarPlantaPorId(@RequestParam Long id);
+
 
 }

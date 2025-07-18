@@ -4,6 +4,7 @@ import App.Domain.Response.Germinacao;
 import App.Domain.Response.Muda;
 import App.Infra.Exceptions.EntityNotFoundException;
 import App.Infra.Exceptions.NullargumentsException;
+import App.Infra.Gateway.MudaCicloGateway;
 import App.Infra.Mapper.MudaMapper;
 import App.Infra.Persistence.Entity.GerminacaoEntity;
 import App.Infra.Persistence.Entity.MudaEntity;
@@ -13,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MudaService {
+public class MudaService implements MudaCicloGateway {
 
     private final MudaRepository mudaRepository;
     private final MudaMapper mudaMapper;
@@ -23,6 +24,7 @@ public class MudaService {
         this.mudaMapper = mudaMapper;
     }
 
+    @Override
     public ResponseEntity<Muda> BuscarCorpoPorId(Long id)
     {
         try
@@ -41,6 +43,7 @@ public class MudaService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Override
     public ResponseEntity<Muda> NovoCiclo()
     {
         try
@@ -58,6 +61,7 @@ public class MudaService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Override
     public ResponseEntity<Muda> AtualizarEntidadeInicio(Long id)
     {
         try
@@ -66,9 +70,9 @@ public class MudaService {
             Muda muda = BuscarCorpoPorId(id).getBody();
             MudaEntity entity = mudaMapper.DtoToEntity(muda);
             entity.Setdados();
-            mudaRepository.save(entity);
-            Muda response = mudaMapper.EntityToDto(entity);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            muda = mudaMapper.EntityToDto(entity);
+            SalvarAlteracao(muda);
+            return new ResponseEntity<>(muda, HttpStatus.OK);
         }
         catch (Exception e)
         {
@@ -77,6 +81,7 @@ public class MudaService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Override
     public ResponseEntity<Muda> AtualizarEntidadeFim(Long id)
     {
         try
@@ -85,9 +90,9 @@ public class MudaService {
             Muda muda = BuscarCorpoPorId(id).getBody();
             MudaEntity entity = mudaMapper.DtoToEntity(muda);
             entity.FimCiclo();
-            mudaRepository.save(entity);
-            Muda response = mudaMapper.EntityToDto(entity);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            muda = mudaMapper.EntityToDto(entity);
+            SalvarAlteracao(muda);
+            return new ResponseEntity<>(muda, HttpStatus.OK);
         }
         catch (Exception e)
         {
@@ -96,12 +101,30 @@ public class MudaService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<Void> SalvarAlteracao(Muda muda)
+    @Override
+    public ResponseEntity<Muda> SalvarAlteracao(Muda muda)
     {
         try
         {
             MudaEntity entity = mudaMapper.DtoToEntity(muda);
             mudaRepository.save(entity);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            e.getMessage();
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<Void> DeletarPorId(Long id)
+    {
+        try
+        {
+            if(id == null){throw new NullargumentsException();}
+            Muda muda = BuscarCorpoPorId(id).getBody();
+            mudaRepository.deleteById(muda.getId());
             return new ResponseEntity<>(HttpStatus.OK);
         }
         catch (Exception e)

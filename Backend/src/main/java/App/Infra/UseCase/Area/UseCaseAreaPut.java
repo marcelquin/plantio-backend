@@ -3,6 +3,7 @@ package App.Infra.UseCase.Area;
 import App.Domain.Response.Area;
 import App.Infra.Gateway.AreaGateway;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 public class UseCaseAreaPut {
@@ -19,14 +20,7 @@ public class UseCaseAreaPut {
                                                       @RequestParam String gps)
     {return areaGateway.EditarInformacoesArea(id, nome, dimensao, gps);}
 
-    public ResponseEntity<Area> AmpliarPlantio(@RequestParam Long id,
-                                               @RequestParam int numeroPlantio,
-                                               @RequestParam int numeroLinhas,
-                                               @RequestParam int numeroLocalizacoes)
-    {return areaGateway.AmpliarPlantio(id, numeroPlantio, numeroLinhas, numeroLocalizacoes);}
-
-    public ResponseEntity<Area> ReduzirPlantio(@RequestParam Long id,
-                                               @RequestParam int numeroPlantio)
-    {return areaGateway.ReduzirPlantio(id, numeroPlantio);}
+    public ResponseEntity<Area> SalvarAlteracoes(@RequestBody Area area)
+    {return areaGateway.SalvarAlteracoes(area);}
 
 }

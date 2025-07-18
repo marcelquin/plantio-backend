@@ -23,9 +23,7 @@ public class PlantaEntity {
 
     private String instrucoes;
 
-    @OneToOne
-    @JoinColumn(name = "localizacaoEntity_id", referencedColumnName = "id")
-    private LocalizacaoEntity localizacao;
+    private String localizacao;
 
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate DataPlantio;
@@ -40,15 +38,23 @@ public class PlantaEntity {
     public PlantaEntity() {
     }
 
-    public PlantaEntity(Long id, String nomeCientifico, String nomePopular, String instrucoes, LocalizacaoEntity localizacao, LocalDate dataPlantio, CicloEntity ciclo, LocalDateTime timeStamp) {
+    public PlantaEntity(Long id, String nomeCientifico, String nomePopular, String instrucoes, String localizacao, LocalDate dataPlantio, CicloEntity ciclo, LocalDateTime timeStamp) {
         this.id = id;
         this.nomeCientifico = nomeCientifico;
         this.nomePopular = nomePopular;
         this.instrucoes = instrucoes;
         this.localizacao = localizacao;
-        this.DataPlantio = dataPlantio;
+        DataPlantio = dataPlantio;
         this.ciclo = ciclo;
         this.timeStamp = timeStamp;
+    }
+
+    public String getLocalizacao() {
+        return localizacao;
+    }
+
+    public void setLocalizacao(String localizacao) {
+        this.localizacao = localizacao;
     }
 
     public Long getId() {
@@ -83,13 +89,6 @@ public class PlantaEntity {
         this.instrucoes = instrucoes;
     }
 
-    public LocalizacaoEntity getLocalizacao() {
-        return localizacao;
-    }
-
-    public void setLocalizacao(LocalizacaoEntity localizacao) {
-        this.localizacao = localizacao;
-    }
 
     public LocalDate getDataPlantio() {
         return DataPlantio;
@@ -115,13 +114,15 @@ public class PlantaEntity {
         this.timeStamp = timeStamp;
     }
 
-    public void SetInfo(String nomePopular, String nomeCientifico, String instrucoes)
+    public void SetInfo(String nomePopular, String nomeCientifico, String instrucoes,String localizacao, CicloEntity ciclo)
     {
         this.nomePopular = nomePopular;
         this.instrucoes = instrucoes;
         this.nomeCientifico = nomeCientifico;
         this.timeStamp = LocalDateTime.now();
-        this.setDataPlantio(LocalDate.now());
+        this.localizacao = localizacao;
+        this.DataPlantio = LocalDate.now();
+        this.ciclo = ciclo;
     }
 
     public void EditInfo(String nomePopular, String nomeCientifico, String instrucoes)
@@ -132,11 +133,23 @@ public class PlantaEntity {
         this.timeStamp = LocalDateTime.now();
     }
 
+    public void AlterarLocalizacao(String localizacao)
+    {
+        this.localizacao = localizacao;
+        this.timeStamp = LocalDateTime.now();
+    }
+
     public void FimCiclo()
     {
         this.localizacao = null;
         this.timeStamp = LocalDateTime.now();
     }
 
+    public void ResetEntity()
+    {
+        this.ciclo = null;
+        this.localizacao = null;
+        this.timeStamp = LocalDateTime.now();
+    }
 
 }

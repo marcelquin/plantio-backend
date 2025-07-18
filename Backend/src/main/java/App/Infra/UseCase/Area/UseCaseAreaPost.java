@@ -15,10 +15,7 @@ public class UseCaseAreaPost {
 
     public ResponseEntity<Area> NovaArea(@RequestParam String nome,
                                          @RequestParam String dimensao,
-                                         @RequestParam String gps,
-                                         @RequestParam int numeroPlantios,
-                                         @RequestParam int numeroLinhas,
-                                         @RequestParam int numeroLocalizacoes)
-    {return areaGateway.NovaArea(nome, dimensao, gps, numeroPlantios, numeroLinhas, numeroLocalizacoes);}
+                                         @RequestParam String gps)
+    {return areaGateway.NovaArea(nome, dimensao, gps);}
 
 }

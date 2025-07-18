@@ -2,8 +2,10 @@ package App.Domain.Bussness;
 
 import App.Domain.Response.Floracao;
 import App.Domain.Response.Frutificacao;
+import App.Domain.Response.Maturacao;
 import App.Infra.Exceptions.EntityNotFoundException;
 import App.Infra.Exceptions.NullargumentsException;
+import App.Infra.Gateway.FrutificacaoCicloGateway;
 import App.Infra.Mapper.FloracaoMapper;
 import App.Infra.Mapper.FrutificacaoMapper;
 import App.Infra.Persistence.Entity.FloracaoEntity;
@@ -15,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
-public class FrutificacaoService {
+public class FrutificacaoService implements FrutificacaoCicloGateway {
 
 
     private final FrutificacaoRepository frutificacaoRepository;
@@ -27,6 +29,7 @@ public class FrutificacaoService {
     }
 
 
+    @Override
     public ResponseEntity<Frutificacao> BuscarCorpoPorId(Long id)
     {
         try
@@ -45,6 +48,7 @@ public class FrutificacaoService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Override
     public ResponseEntity<Frutificacao> NovoCiclo()
     {
         try
@@ -62,6 +66,7 @@ public class FrutificacaoService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Override
     public ResponseEntity<Frutificacao> AtualizarEntidadeInicio(Long id)
     {
         try
@@ -70,9 +75,9 @@ public class FrutificacaoService {
             Frutificacao frutificacao = BuscarCorpoPorId(id).getBody();
             FrutificacaoEntity entity = frutificacaoMapper.DtoToEntity(frutificacao);
             entity.Setdados();
-            frutificacaoRepository.save(entity);
-            Frutificacao response = frutificacaoMapper.EntityToDto(entity);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            frutificacao = frutificacaoMapper.EntityToDto(entity);
+            SalvarAlteracao(frutificacao);
+            return new ResponseEntity<>(frutificacao, HttpStatus.OK);
         }
         catch (Exception e)
         {
@@ -81,6 +86,7 @@ public class FrutificacaoService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Override
     public ResponseEntity<Frutificacao> AtualizarEntidadeFim(Long id)
     {
         try
@@ -89,9 +95,9 @@ public class FrutificacaoService {
             Frutificacao frutificacao = BuscarCorpoPorId(id).getBody();
             FrutificacaoEntity entity = frutificacaoMapper.DtoToEntity(frutificacao);
             entity.FimCiclo();
-            frutificacaoRepository.save(entity);
-            Frutificacao response = frutificacaoMapper.EntityToDto(entity);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            frutificacao = frutificacaoMapper.EntityToDto(entity);
+            SalvarAlteracao(frutificacao);
+            return new ResponseEntity<>(frutificacao, HttpStatus.OK);
         }
         catch (Exception e)
         {
@@ -100,12 +106,23 @@ public class FrutificacaoService {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<Void> SalvarAlteracao(Frutificacao frutificacao)
+    @Override
+    public ResponseEntity<Frutificacao> SalvarAlteracao(Frutificacao frutificacao)
+    {
+        if(frutificacao == null){throw new NullargumentsException();}
+        FrutificacaoEntity entity = frutificacaoMapper.DtoToEntity(frutificacao);
+        frutificacaoRepository.save(entity);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Void> DeletarPorId(Long id)
     {
         try
         {
-            FrutificacaoEntity entity = frutificacaoMapper.DtoToEntity(frutificacao);
-            frutificacaoRepository.save(entity);
+            if(id == null){throw new NullargumentsException();}
+            Frutificacao frutificacao = BuscarCorpoPorId(id).getBody();
+            frutificacaoRepository.deleteById(frutificacao.getId());
             return new ResponseEntity<>(HttpStatus.OK);
         }
         catch (Exception e)

@@ -19,9 +19,6 @@ public class UseCaseAreaGet {
     public ResponseEntity<List<Area>> ListarAreas()
     {return areaGateway.ListarAreas();}
 
-    public ResponseEntity<List<AreaPesquisaResponse>> ListarAreasPesquisa()
-    {return areaGateway.ListarAreasPesquisa();}
-
     public ResponseEntity<Area> BuscarAreaPorId(@RequestParam Long id)
     {return areaGateway.BuscarAreaPorId(id);}
 
