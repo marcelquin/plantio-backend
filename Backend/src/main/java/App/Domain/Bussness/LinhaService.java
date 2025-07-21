@@ -14,6 +14,7 @@ import App.Infra.Persistence.Entity.LocalizacaoEntity;
 import App.Infra.Persistence.Repository.LinhaRepository;
 import App.Infra.UseCase.Localizacao.UseCaseLocalizacaoDelete;
 import App.Infra.UseCase.Localizacao.UseCaseLocalizacaoPut;
+import App.Infra.UseCase.Mensagem.UseCaseMensagemPost;
 import App.Infra.UseCase.Planta.UseCasePlantaGet;
 import App.Infra.UseCase.Plantio.UseCasePlantioGet;
 import App.Infra.UseCase.Plantio.UseCasePlantioPut;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,19 +37,22 @@ public class LinhaService implements LinhaGateway {
     private final LinhaMapper linhaMapper;
     private final UseCaseLocalizacaoPut caseLocalizacaoPut;
     private final UseCaseLocalizacaoDelete useCaseLocalizacaoDelete;
+    private final UseCaseMensagemPost caseMensagemPost;
 
     public LinhaService(@Lazy UseCasePlantioGet useCasePlantioGet,
                         @Lazy UseCasePlantioPut useCasePlantioPut,
                         LinhaRepository linhaRepository,
                         LinhaMapper linhaMapper,
                         @Lazy UseCaseLocalizacaoPut caseLocalizacaoPut,
-                        @Lazy UseCaseLocalizacaoDelete useCaseLocalizacaoDelete) {
+                        @Lazy UseCaseLocalizacaoDelete useCaseLocalizacaoDelete,
+                        @Lazy UseCaseMensagemPost caseMensagemPost) {
         this.useCasePlantioGet = useCasePlantioGet;
         this.useCasePlantioPut = useCasePlantioPut;
         this.linhaRepository = linhaRepository;
         this.linhaMapper = linhaMapper;
         this.caseLocalizacaoPut = caseLocalizacaoPut;
         this.useCaseLocalizacaoDelete = useCaseLocalizacaoDelete;
+        this.caseMensagemPost = caseMensagemPost;
     }
 
 
@@ -124,6 +129,8 @@ public class LinhaService implements LinhaGateway {
             Linha response = linhaMapper.EntityToDto(entity);
             plantio.getLinhas().add(response);
             useCasePlantioPut.SalarAlteracao(plantio);
+            String mensagem = "Na data de "+ LocalDateTime.now()+" foi adiionada uma nova linha de referência: "+response.getIdentificador()+".";
+            caseMensagemPost.SetMensangem(plantio.getIdentificador(),mensagem);
             return new ResponseEntity<>(response,HttpStatus.CREATED);
         }
         catch (Exception e)
@@ -185,6 +192,8 @@ public class LinhaService implements LinhaGateway {
             {
                 useCaseLocalizacaoDelete.DeletarLocalizacaoPorId(localizacao.getId());
             }
+            String mensagem = "Na data de "+ LocalDateTime.now()+" foi deletada a linha de referência: "+linha.getIdentificador()+".";
+            caseMensagemPost.SetMensangem(plantio.getIdentificador(),mensagem);
             linhaRepository.deleteById(linha.getId());
             return new ResponseEntity<>(HttpStatus.OK);
         }

@@ -29,7 +29,7 @@ public class MensagemService implements MensagemGateway {
         try
         {
             if(identificador == null){throw new NullargumentsException();}
-            String[] partes = identificador.split("-");
+            String[] partes = identificador.split(":");
             String plantio = partes[0];
             return plantio;
         }

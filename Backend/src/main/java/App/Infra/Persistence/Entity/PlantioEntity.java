@@ -113,9 +113,8 @@ public class PlantioEntity {
         this.identificador = areaNome+"_"+numero;
     }
 
-    public void SetNovaAdubacao(String relatorio)
+    public void SetNovaAdubacao()
     {
-        this.notificacoes.add(relatorio);
         this.timeStamp = LocalDateTime.now();
         this.setDataAdubacao(LocalDate.now());
     }

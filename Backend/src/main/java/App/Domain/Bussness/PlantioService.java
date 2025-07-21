@@ -19,11 +19,13 @@ import App.Infra.UseCase.Area.UseCaseAreaGet;
 import App.Infra.UseCase.Area.UseCaseAreaPut;
 import App.Infra.UseCase.Linha.UseCaseLinhaDelete;
 import App.Infra.UseCase.Linha.UseCaseLinhaPut;
+import App.Infra.UseCase.Mensagem.UseCaseMensagemPost;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,14 +38,22 @@ public class PlantioService implements PlantioGateway {
     private final UseCaseAreaPut useCaseAreaPut;
     private final UseCaseLinhaPut caseLinhaPut;
     private final UseCaseLinhaDelete useCaseLinhaDelete;
+    private final UseCaseMensagemPost useCaseMensagemPost;
 
-    public PlantioService(PlantioRepository plantioRepository, PlantioMapper plantioMapper, @Lazy UseCaseAreaGet useCaseAreaGet, @Lazy UseCaseAreaPut useCaseAreaPut, UseCaseLinhaPut caseLinhaPut, @Lazy UseCaseLinhaDelete useCaseLinhaDelete) {
+    public PlantioService(PlantioRepository plantioRepository,
+                          PlantioMapper plantioMapper,
+                          @Lazy UseCaseAreaGet useCaseAreaGet,
+                          @Lazy UseCaseAreaPut useCaseAreaPut,
+                          @Lazy UseCaseLinhaPut caseLinhaPut,
+                          @Lazy UseCaseLinhaDelete useCaseLinhaDelete,
+                          @Lazy UseCaseMensagemPost useCaseMensagemPost) {
         this.plantioRepository = plantioRepository;
         this.plantioMapper = plantioMapper;
         this.useCaseAreaGet = useCaseAreaGet;
         this.useCaseAreaPut = useCaseAreaPut;
         this.caseLinhaPut = caseLinhaPut;
         this.useCaseLinhaDelete = useCaseLinhaDelete;
+        this.useCaseMensagemPost = useCaseMensagemPost;
     }
 
 
@@ -181,6 +191,8 @@ public class PlantioService implements PlantioGateway {
             {
                 caseLinhaPut.AlterarIdentificador(linha.getId(),plantio.getIdentificador());
             }
+            String mensagem = "Na data de "+ LocalDateTime.now()+" Houve uma aleração de Identificador o plantio agora responde por: "+plantio.getIdentificador()+".";
+            useCaseMensagemPost.SetMensangem(plantio.getIdentificador(),mensagem);
             return new ResponseEntity<>(plantio,HttpStatus.OK);
         }
         catch (Exception e)
@@ -199,9 +211,11 @@ public class PlantioService implements PlantioGateway {
             if(relatorio == null){throw new NullargumentsException();}
             Plantio plantio = BuscarPlantioPorId(id).getBody();
             PlantioEntity entity = plantioMapper.DtoToEntity(plantio);
-            entity.SetNovaAdubacao(relatorio);
+            entity.SetNovaAdubacao();
             plantioRepository.save(entity);
             plantio = plantioMapper.EntityToDto(entity);
+            String mensagem = "Na data de "+ LocalDateTime.now()+" Foi feita uma adubação em que foi feito o procedimento de: "+relatorio+".";
+            useCaseMensagemPost.SetMensangem(plantio.getIdentificador(),mensagem);
             return new ResponseEntity<>(plantio,HttpStatus.OK);
         }
         catch (Exception e)

@@ -15,6 +15,7 @@ import App.Infra.Persistence.Enum.CICLO;
 import App.Infra.Persistence.Repository.LocalizacaoRepository;
 import App.Infra.UseCase.Linha.UseCaseLinhaGet;
 import App.Infra.UseCase.Linha.UseCaseLinhaPut;
+import App.Infra.UseCase.Mensagem.UseCaseMensagemPost;
 import App.Infra.UseCase.Planta.UseCasePlantaDelete;
 import App.Infra.UseCase.Planta.UseCasePlantaGet;
 import App.Infra.UseCase.Planta.UseCasePlantaPut;
@@ -38,6 +39,7 @@ public class LocalizacaoService implements LocalizacaoGateway {
     private final UseCasePlantaGet casePlantaGet;
     private final UseCasePlantaPut casePlantaPut;
     private final UseCasePlantaDelete casePlantaDelete;
+    private final UseCaseMensagemPost caseMensagemPost;
 
     public LocalizacaoService(LocalizacaoRepository localizacaoRepository,
                               LocalizacaoMapper localizacaoMapper,
@@ -46,7 +48,8 @@ public class LocalizacaoService implements LocalizacaoGateway {
                               @Lazy UseCaseLinhaPut useCaseLinhaPut,
                               @Lazy UseCasePlantaGet casePlantaGet,
                               @Lazy UseCasePlantaPut casePlantaPut,
-                              @Lazy UseCasePlantaDelete casePlantaDelete) {
+                              @Lazy UseCasePlantaDelete casePlantaDelete,
+                              @Lazy UseCaseMensagemPost caseMensagemPost) {
         this.localizacaoRepository = localizacaoRepository;
         this.localizacaoMapper = localizacaoMapper;
         this.plantaMapper = plantaMapper;
@@ -55,6 +58,7 @@ public class LocalizacaoService implements LocalizacaoGateway {
         this.casePlantaGet = casePlantaGet;
         this.casePlantaPut = casePlantaPut;
         this.casePlantaDelete = casePlantaDelete;
+        this.caseMensagemPost = caseMensagemPost;
     }
 
     @Override
@@ -219,6 +223,9 @@ public class LocalizacaoService implements LocalizacaoGateway {
             Localizacao response = localizacaoMapper.EntityToDto(entity);
             linha.getLocalizacoes().add(response);
             useCaseLinhaPut.SalvarAlteracao(linha);
+            String identificadorPlantio = caseMensagemPost.setIdentificadorPlantio(linha.getIdentificador());
+            String mensagem = "Na data de "+LocalDateTime.now()+" Houve uma adição de nova localização na linha "+linha.getIdentificador()+", de identificador: "+entity.getReferencia()+".";
+            caseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
             return new ResponseEntity<>(response,HttpStatus.CREATED);
         }
         catch (Exception e)
@@ -300,6 +307,9 @@ public class LocalizacaoService implements LocalizacaoGateway {
                 //casePlantaDelete.DeletarPlantaPorId(localizacao.getPlanta().getId());
                 casePlantaPut.AlterarCiclo(plantaId, "FIM");
             }
+            String identificadorPlantio = caseMensagemPost.setIdentificadorPlantio(linha.getIdentificador());
+            String mensagem = "Na data de "+LocalDateTime.now()+" a localização?: "+localizacao.getReferencia()+", foi deletada.";
+            caseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
             localizacaoRepository.deleteById(localizacaoId);
             return new ResponseEntity<>(HttpStatus.OK);
         }
