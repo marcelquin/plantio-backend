@@ -181,6 +181,9 @@ public class LocalizacaoService implements LocalizacaoGateway {
             entity.Indisponibilizar(plantaEntity);
             localizacao = localizacaoMapper.EntityToDto(entity);
             SalvarAlteracao(localizacao);
+            String identificadorPlantio = caseMensagemPost.setIdentificadorPlantio(localizacao.getReferencia());
+            String mensagem = "Na data de "+LocalDateTime.now()+" a localização "+localizacao.getReferencia()+" foi utilizada.";
+            caseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
             return new ResponseEntity<>(localizacao,HttpStatus.OK);
         }
         catch (Exception e)
@@ -201,6 +204,9 @@ public class LocalizacaoService implements LocalizacaoGateway {
             entity.Disponibilizar();
             localizacao = localizacaoMapper.EntityToDto(entity);
             SalvarAlteracao(localizacao);
+            String identificadorPlantio = caseMensagemPost.setIdentificadorPlantio(localizacao.getReferencia());
+            String mensagem = "Na data de "+LocalDateTime.now()+" a localização "+localizacao.getReferencia()+" esta disponivel.";
+            caseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
             return new ResponseEntity<>(localizacao,HttpStatus.OK);
         }
         catch (Exception e)
@@ -244,6 +250,7 @@ public class LocalizacaoService implements LocalizacaoGateway {
             if(identificadorLinha == null){throw new NullargumentsException();}
             Localizacao localizacao = BuscarLocalizacaoPorId(id).getBody();
             LocalizacaoEntity entity = localizacaoMapper.DtoToEntity(localizacao);
+            String referenciaAnterior = localizacao.getReferencia();
             entity.AlterarReferencia(identificadorLinha);
             localizacao = localizacaoMapper.EntityToDto(entity);
             SalvarAlteracao(localizacao);
@@ -252,6 +259,9 @@ public class LocalizacaoService implements LocalizacaoGateway {
                 Planta planta = casePlantaGet.BuscarPlantaPorId(localizacao.getPlanta().getId()).getBody();
                 casePlantaPut.AtualizarLocalizacao(planta.getId(),localizacao.getReferencia());
             }
+            String identificadorPlantio = caseMensagemPost.setIdentificadorPlantio(localizacao.getReferencia());
+            String mensagem = "Na data de "+LocalDateTime.now()+" Houve uma alteração na localização "+referenciaAnterior+", que agora atende pela referencia: "+localizacao.getReferencia()+".";
+            caseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
             return new ResponseEntity<>(localizacao,HttpStatus.OK);
         }
         catch (Exception e)
@@ -308,7 +318,7 @@ public class LocalizacaoService implements LocalizacaoGateway {
                 casePlantaPut.AlterarCiclo(plantaId, "FIM");
             }
             String identificadorPlantio = caseMensagemPost.setIdentificadorPlantio(linha.getIdentificador());
-            String mensagem = "Na data de "+LocalDateTime.now()+" a localização?: "+localizacao.getReferencia()+", foi deletada.";
+            String mensagem = "Na data de "+LocalDateTime.now()+" a localização: "+localizacao.getReferencia()+", foi deletada.";
             caseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
             localizacaoRepository.deleteById(localizacaoId);
             return new ResponseEntity<>(HttpStatus.OK);

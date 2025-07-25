@@ -148,6 +148,7 @@ public class LinhaService implements LinhaGateway {
             if(linhaId == null) {throw new NullargumentsException();}
             if(identificadorPlantio == null) {throw new NullargumentsException();}
             Linha linha = BuscarLinhaPorId(linhaId).getBody();
+            String referenciaAnterior = linha.getIdentificador();
             LinhaEntity entity = linhaMapper.DtoToEntity(linha);
             entity.AlterarIdentificador(identificadorPlantio);
             linha = linhaMapper.EntityToDto(entity);
@@ -156,6 +157,8 @@ public class LinhaService implements LinhaGateway {
             {
                 caseLocalizacaoPut.AlterarReferencia(localizacao.getId(),linha.getIdentificador());
             }
+            String mensagem = "Na data de "+LocalDateTime.now()+" a linha "+referenciaAnterior+" foi alterada para:"+linha.getIdentificador()+".";
+            caseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
             return new ResponseEntity<>(linha,HttpStatus.OK);
         }
         catch (Exception e)

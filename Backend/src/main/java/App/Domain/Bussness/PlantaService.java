@@ -310,11 +310,17 @@ public class PlantaService implements PlantaGateway {
             if(nomePopular == null){throw new NullargumentsException();}
             if(instrucoes == null){throw new NullargumentsException();}
             Planta planta = BuscarPlantaPorId(plantaId).getBody();
+            String nomePopularAnterior = planta.getNomePopular();
             PlantaEntity entity = plantaMapper.DtoToEntity(planta);
             entity.EditInfo(nomePopular,nomeCientifico,instrucoes);
-            plantaRepository.save(entity);
+            planta = plantaMapper.EntityToDto(entity);
+            SalvarAlteracao(planta);
             String identificadorPlantio = useCaseMensagemPost.setIdentificadorPlantio(planta.getLocalizacao());
-            String mensagem = "Na data de "+LocalDateTime.now()+" Houve uma alteração nos dados cadastrais na planta "+planta.getNomePopular();
+            String mensagem = "Na data de "+LocalDateTime.now()+" Houve uma alteração nos dados cadastrais na planta "+nomePopular+".";
+            if(!nomePopularAnterior.equals(nomePopular))
+            {
+                mensagem = "Na data de "+LocalDateTime.now()+" Houve uma alteração nos dados cadastrais na planta "+nomePopularAnterior+" ,que agora se identifica por "+nomePopular+".";
+            }
             useCaseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
             return new ResponseEntity<>(planta, HttpStatus.OK);
         } catch (Exception e)
@@ -335,10 +341,10 @@ public class PlantaService implements PlantaGateway {
                 PlantaEntity entity = plantaMapper.DtoToEntity(planta);
                 CICLO cicloConvertido = RetornaCicloAtual(ciclo);
                 caseCicloPut.AlterarCiclo(planta.getId(), cicloConvertido);
-                plantaRepository.save(entity);
                 Planta response = plantaMapper.EntityToDto(entity);
+                SalvarAlteracao(response);
                 String identificadorPlantio = useCaseMensagemPost.setIdentificadorPlantio(planta.getLocalizacao());
-                String mensagem = "Na data de "+LocalDateTime.now()+" Houve uma alteração de Ciclo na planta "+planta.getNomePopular()+", estando agora no ciclo: "+planta.getCiclo().getCiclo();
+                String mensagem = "Na data de "+LocalDateTime.now()+" Houve uma alteração de Ciclo na planta "+planta.getNomePopular()+", estando agora no ciclo "+ciclo+".";
                 useCaseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
                 return new ResponseEntity<>(response,HttpStatus.OK);
             }
@@ -380,13 +386,10 @@ public class PlantaService implements PlantaGateway {
     {
         try
         {
-            if(planta != null)
-            {
-                PlantaEntity entity = plantaMapper.DtoToEntity(planta);
-                plantaRepository.save(entity);
-                return new ResponseEntity<>(HttpStatus.OK);
-            }
-            else {throw new NullargumentsException();}
+            if(planta == null){throw new NullargumentsException();}
+            PlantaEntity entity = plantaMapper.DtoToEntity(planta);
+            plantaRepository.save(entity);
+            return new ResponseEntity<>(HttpStatus.OK);
         }
         catch (Exception e)
         {
@@ -425,6 +428,7 @@ public class PlantaService implements PlantaGateway {
             Planta planta = BuscarPlantaPorId(plantaId).getBody();
             if(planta.getLocalizacao() == null){throw new IllegalActionException();}
             Localizacao localizacao = useCaseLocalizacaoGet.BuscarLocalizacaoPorReferencia(planta.getLocalizacao()).getBody();
+            String localizacaoAnterior = localizacao.getReferencia();
             useCaseLocalizacaoPut.DisponibilizarLocalizacao(localizacao.getId());
             Localizacao localizacaoAtual = useCaseLocalizacaoGet.BuscarLocalizacaoPorId(localizacaoId).getBody();
             PlantaEntity entity = plantaMapper.DtoToEntity(planta);
@@ -432,6 +436,9 @@ public class PlantaService implements PlantaGateway {
             planta = plantaMapper.EntityToDto(entity);
             SalvarAlteracao(planta);
             useCaseLocalizacaoPut.IndisponibilizarLocalizacao(localizacaoAtual.getId(),planta);
+            String identificadorPlantio = useCaseMensagemPost.setIdentificadorPlantio(planta.getLocalizacao());
+            String mensagem = "Na data de "+LocalDateTime.now()+" Houve uma alteração de Localização na planta "+planta.getNomePopular()+", que se encontrava em "+localizacaoAnterior+" estando agora na localização: "+localizacaoAtual.getReferencia()+".";
+            useCaseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
             return new ResponseEntity<>(planta, HttpStatus.OK);
         }
         catch (Exception e)
@@ -455,6 +462,9 @@ public class PlantaService implements PlantaGateway {
             SalvarAlteracao(planta);
             caseCicloDelete.DeletarPorId(ciclo.getId());
             plantaRepository.deleteById(planta.getId());
+            String identificadorPlantio = useCaseMensagemPost.setIdentificadorPlantio(planta.getLocalizacao());
+            String mensagem = "Na data de "+LocalDateTime.now()+" a planta "+planta.getNomePopular()+", foi deletada.";
+            useCaseMensagemPost.SetMensangem(identificadorPlantio,mensagem);
             return new ResponseEntity<>(HttpStatus.OK);
         }
         catch (Exception e)
